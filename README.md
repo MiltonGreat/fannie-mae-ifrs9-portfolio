@@ -180,3 +180,13 @@ pip install -r requirements.txt
 # Launch Jupyter
 jupyter notebook
 
+# Data Directory
+
+## Data Source
+
+This project uses the Fannie Mae Single-Family Loan Performance dataset.
+
+### Download Instructions
+
+**Visit Kaggle.com to find the Fannie Mae Data:**
+   - Go to: [https://www.fanniemae.com/research-and-insights/data](https://www.kaggle.com/datasets/pranay07/fanne-mae-loan-performance-data)

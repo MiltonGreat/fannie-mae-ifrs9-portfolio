@@ -24,25 +24,13 @@ This project demonstrates all three on public Fannie Mae data, with every method
 
 **The framing discipline is the point.** An earlier version of this project characterized its capital result as "Inadequate under stress." That was wrong — the ratio was a scale mismatch, not a capital adequacy finding. Correcting that framing is the most valuable thing this project demonstrates about model governance.
 
----
-
-## The framing correction — read this first
-
-An earlier version of this project reported a "capital impact ratio" of ~1,000% and characterized the result as **"Inadequate under stress."** That framing was wrong, and it has been corrected. Two things were happening:
-
-**1. The denominator was the wrong capital.** CET1 is a ratio against risk-weighted assets (RWA), not against total assets. The pipeline assumed total assets of $1 billion and multiplied by a CET1 *ratio* (4.5%) to get an assumed capital figure of $45 million. That is not the CET1 capital of any real bank — it is a fabricated denominator that produces a ratio that looks alarming but isn't meaningful.
-
-**2. The comparison was a scale mismatch.** Per-loan ECL × portfolio size gives portfolio-aggregate ECL (~$223M). Comparing that to $45M gives "995% covered" — which reads as "capital would be exhausted ten times over." But a real bank's CET1 capital is many multiples of $45M for a $223M stressed-ECL portfolio. The comparison is a numerical artifact.
-
-**What the pipeline reports instead:**
+**What the pipeline reports:**
 
 | Metric | Value | What it means |
 |---|---|---|
 | Portfolio ECL as % of total assets (weighted) | 22.31% | A **coverage metric** — how much of the assumed asset base is consumed by expected losses |
 | Portfolio ECL as % of total assets (tail) | 75.12% | Same, under the Tail Risk scenario |
 | ECL / CET1 ratio | ~496% (weighted) | **Diagnostic only** — a scale-mismatched ratio, not a capital adequacy finding |
-
-**Why this correction is the headline.** Getting the framing wrong on capital adequacy is the kind of error that gets cited against an institution in a model risk finding. A project that says "Inadequate under stress" when its own math is a scale mismatch is less credible than one that says "Coverage diagnostic only; a real capital test requires RWA and institution-specific capital." The correction demonstrates the analyst's most important skill: knowing what the numbers do and do not support.
 
 ---
 

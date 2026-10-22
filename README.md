@@ -10,7 +10,9 @@
 
 ---
 
-## The business problemA bank's finance and risk teams must estimate Expected Credit Losses (ECL) under IFRS 9 — a forward-looking, probability-weighted estimate of losses on the loan book, updated every reporting period. The estimate drives provisioning, capital planning, and stress testing.
+## The business problem
+
+A bank's finance and risk teams must estimate Expected Credit Losses (ECL) under IFRS 9 — a forward-looking, probability-weighted estimate of losses on the loan book, updated every reporting period. The estimate drives provisioning, capital planning, and stress testing.
 
 The framework has three hard parts:
 

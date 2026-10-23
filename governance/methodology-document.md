@@ -1,3 +1,82 @@
+# Fannie Mae IFRS 9 ECL Demonstration — Methodology Document
+
+**Document ID:** FM-MD-001  
+**Version / Status:** 1.4 / Frozen at NB03 v1.3 execution  
+**Project:** Fannie Mae — IFRS 9 ECL methodology demonstration  
+**Document type:** Methodology Document (MD)  
+**Frozen at:** NB03 v1.3 (see companion documents for the exact run ID at the time of this revision)  
+**Companion documents:** FM-PDR-001 (Problem Definition Record) · FM-DS-001 (Data Specification) · FM-FDL-001 (Feature Decision Log) · FM-RVP-001 (Risk & Validation Plan) · FM-DCR-001 (Decision Criteria Register) · MAP-STF-FM-001 (IFRS 9 Stress Testing Framework) · MAP-RP-001 (Remediation Plan)
+
+---
+
+## At a glance
+
+| Field | Value |
+|---|---|
+| **Purpose** | Describe how the Fannie Mae IFRS 9 ECL methodology is constructed and parameterized |
+| **Model class** | No ML model — a frozen parameter set (`IFRS9Config`) plus deterministic calibration |
+| **PD** | Summary statistic — unconditional PD = mean of `default`, clipped to [0.01%, 20%] |
+| **LGD** | Deterministic — base 45% + age/LTV/property adjustments, clipped to [10%, 90%] |
+| **EAD** | Deterministic — `ORG_UPB` × prepayment × curtailment, with **CCF = 0** |
+| **Staging** | Stage 3 = `delinquency_state >= 3` (i.e., `default × 5`); Stage 2 = top-decile proxy SICR |
+| **ECL** | Per-stage + probability-weighted across four scenarios (45/30/15/10) |
+| **Where results live** | FM-DCR-001 §4 (measured values against criteria); MAP-STF-FM-001 §7 (framework observations) |
+
+> **Document purpose.** This document describes how the Fannie Mae IFRS 9 ECL Demonstration is constructed: the PD/LGD/EAD calibration approach, the IFRS 9 staging rules, the ECL computation (per-stage and probability-weighted), and the parameterization that is frozen in `notebook_03_parameters.json`. It is the technical companion to the Feature Decision Log (which documents the constructed parameters) and the framework document (MAP-STF-FM-001, which documents whether the methodology is defensible).
+>
+> **On the "prescribed vs run" distinction.** The MD states what the methodology *prescribes*. Where the run deviated from the prescription (if any), the deviation is recorded in a separate "Run evidence" block. **The measured values in this run are in FM-DCR-001 §4**, not in this document; the MD cites the DCR for results.
+
+---
+
+## 1. Purpose and scope
+
+This document describes how the Fannie Mae IFRS 9 ECL Demonstration is constructed: the PD/LGD/EAD calibration approach, the IFRS 9 staging rules, the ECL computation (per-stage and probability-weighted), and the parameterization that is frozen in `notebook_03_parameters.json`.
+
+**In scope:** IFRS 9 parameterization (PD, LGD, EAD), Stage 1/2/3 classification, per-stage ECL, probability-weighted ECL across four scenarios, regulatory mapping.
+
+**Out of scope:** production ECL calculation, capital calculation, direct recovery-data calibration, macroeconomic overlay, Canadian portfolio validation, fairness testing.
+
+---
+
+## 2. Model class selection and rationale
+
+**Unlike Lending Club, the Fannie Mae pipeline does not train ML models.** The PD is a summary statistic (mean default rate); the LGD is a deterministic adjustment function; the EAD is a deterministic calculation. **There is no model class to select.**
+
+**Why this is deliberate.** The goal is methodology demonstration, not model development. A real IFRS 9 implementation would fit PD via logistic regression, LGD via recovery data, and EAD via prepayment/curtailment models. The demonstration **specifies these values as analyst inputs** and focuses on the IFRS 9 machinery (staging, ECL weighting) that a production system would need.
+
+**The consequence.** The pipeline's "model" is a frozen parameter set (the `IFRS9Config` dataclass), not a trained artifact. The pipeline does not produce predictions; it computes ECL from the parameters. **Changing a parameter is a MAJOR version bump** and requires re-running NB04, NB05, and NB06 — see §4 for the frozen parameters.
+
+**On the difference from Lending Club.** The Lending Club project *trains* four ML models and *validates* the selected model. The Fannie Mae project *specifies* the parameters and *demonstrates* the IFRS 9 machinery. The two projects share a governance discipline (versioned contracts, audit trails, register guards) but not a modelling paradigm. **A reader who reads both MDs should see the difference, not the same document with different numbers.**
+
+---
+
+## 3. Data flow and pipeline architecture
+
+Raw data (Fannie Mae.zip → train4.csv, ~1M rows)
+│
+▼ NB01: sample 100K, construct parameters, clean
+│
+Clean data (100K × 175)
+│
+▼ NB02: EDA (descriptive only — no verdict)
+│
+▼ NB03: parameter calibration
+│
+├── IFRS9Config (frozen parameters)
+├── pd_estimate (constructed)
+├── lgd_final (constructed)
+├── ead_final (constructed)
+├── Stage 1/2/3 classification
+├── Per-stage ECL
+├── Probability-weighted ECL (4 scenarios)
+│
+▼ NB03: writes notebook_03_parameters.json (the contract)
+│
+▼ NB04: stress testing + fairness (reads parameters)
+│
+▼ NB05: compliance report (reads parameters)
+│
+▼ NB06: Power BI export (reads parameters)
 
 **The critical pipeline property.** NB03 writes `notebook_03_parameters.json` as a frozen contract. NB04, NB05, and NB06 read it — **they do not recompute**. Changing a parameter in NB03 invalidates all downstream artifacts, which is why the parameter JSON is the **reproducibility anchor**.
 

@@ -254,8 +254,8 @@ Every notebook run produces an audit log, a `run_id` on every artifact, and a SH
 
 ## Related repositories
 
-- [model-analysis-package](https://github.com/yourusername/model-analysis-package) — the MAP anchor: five governance deliverables, including this project's Stress Testing Framework
-- [lending-club-model-validation](https://github.com/yourusername/lending-club-model-validation) — the companion independent validation
+- [model-analysis-package](https://github.com/MiltonGreat/model-analysis-package) — the MAP anchor: five governance deliverables, including this project's Stress Testing Framework
+- [lending-club-model-validation](https://github.com/MiltonGreat/credit-risk-model-validation) — the companion independent validation
 
 ## License
 

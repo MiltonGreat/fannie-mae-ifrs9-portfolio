@@ -68,6 +68,10 @@ This project demonstrates all three on public Fannie Mae data, with every method
 
 > **Note on EAD ratio.** The EAD ratio of 86.95% is above the 50–85% target band. This triggers investigation trigger IT-03 and appears as Finding FM-R-08 in the remediation register. It is not necessarily a methodology error — a portfolio weighted toward younger loans (before prepayment and curtailment have had time to reduce the balance) will naturally show a higher ratio. It is disclosed and flagged, not suppressed.
 
+> **Note on the severity check.** The Severely Adverse scenario's ECL rate is 1.27× the 2008–2010 historical average, which is **below** the 1.5× target in the Decision Criteria Register. The notebook logs an AP-05 warning and an IT-05 investigation trigger. The correct reading is: the assumed scenario multipliers produce a scenario the register considers *insufficiently severe*, not that the portfolio is safe. The 3.0× PD multiplier is an assumption with a precedent label ("2008 financial crisis"), not a calibrated parameter. A production implementation would derive the multiplier from a macro-to-PD linkage; this notebook does not implement that linkage. This is documented as Limitation L9.
+
+> **Note on the PD cap.** The PD cap does not bind in this run — Tail Risk PD (4.29%) is below the 20% cap. The cap-sensitivity analysis therefore reports +0.0% understatement. The mechanism is in place for runs where base PD is higher; in this run it is a null result, not a finding.
+
 ---
 
 ## IFRS 9 parameters
@@ -95,6 +99,10 @@ This project demonstrates all three on public Fannie Mae data, with every method
 
 **What this means for a reader:** do not read "9.9% Stage 2" as "9.9% of the portfolio had a significant increase in credit risk." It means "the top-decile proxy assigned 9.9% of loans to Stage 2." The distinction matters because a bank's reported Stage 2 fraction is an observed measurement; this project's is a construction.
 
+**What a true SICR assessment would require.** IFRS 9 §5.5.9 requires assessing whether credit risk has *increased significantly since initial recognition*, using all reasonable and supportable information available without undue cost or effort. The standard's indicators include changes in internal credit ratings or scores since origination, and significant increases in the credit risk of other instruments of the same borrower. This dataset contains origination characteristics and a default outcome; it does not contain current credit scores, current delinquency status, or any observation of the borrower's circumstances at the reporting date. A true SICR assessment cannot be made with origination-only data. The proxy is a cross-sectional risk ranking, not a change-since-origination assessment. The notebook documents this, and the honest reading of the Stage 2 share is "top-decile proxy," not "SICR."
+
+**What a true 30-DPD backstop would require.** IFRS 9 §5.5.11 creates a *rebuttable* presumption that 30 days past due is a SICR trigger — not an automatic rule. The notebook applies the backstop without rebuttal, which is conservative (it may over-assign Stage 2) but is a simplification, not a standard-compliant implementation. The notebook documents this distinction.
+
 ---
 
 ## Scenario analysis
@@ -108,17 +116,28 @@ This project demonstrates all three on public Fannie Mae data, with every method
 
 **Probability-weighted ECL (per loan): ~$2,231.**
 
+### What the scenario design does and does not do
+
+The scenario design has two layers that are not connected:
+
+- **Layer 1 — macro narratives** (GDP, unemployment, HPI). Documented for context, **not used in the calculation**.
+- **Layer 2 — PD/LGD multipliers.** Direct inputs to the ECL arithmetic.
+
+IFRS 9 §5.5.18 requires incorporating forecasts of future economic conditions. In this notebook, the economic conditions are narrated but not modelled. A production implementation would map the macro path to PD/LGD (via a satellite model or a historical regression), so a change in the unemployment assumption changes the ECL. Here, changing the macro dict changes nothing. **This is a methodology demonstration of the arithmetic of probability-weighted ECL, not an implementation of the economic linkage that §5.5.18 requires.**
+
 ### PD cap sensitivity
 
-The Tail Risk scenario's PD is capped at 20% (the config's `pd_cap`). Without the cap, the pre-cap PD would be ~26.1%, and the uncapped ECL would be ~$16,858 per loan, versus $12,901 with the cap. The cap **understates Tail Risk ECL by ~30.7%**.
-
-This is a deliberate stability measure, not a calibration error. It is documented as Limitation L6, and the uncapped value is reported alongside the capped value in NB04 so the effect is disclosed rather than hidden.
+The Tail Risk scenario's PD is capped at 20% (the config's `pd_cap`). In this run, the cap **does not bind** — Tail Risk PD (4.29%) is well below the cap, so the cap-sensitivity effect is +0.0%. The mechanism is documented as Limitation L6, and the uncapped value is reported alongside the capped value in NB04 so the effect is disclosed rather than hidden. A run with a higher base PD would show a non-zero effect.
 
 ### Severity calibration check
 
-The Severely Adverse ECL as a rate of EAD is compared against the 2008–2010 historical average (1.44%). The pipeline reports a ratio of ~1.27× historical — below the 1.5× "severely adverse" threshold in the Register.
+The Severely Adverse ECL as a rate of EAD is compared against the 2008–2010 historical average (1.44%). The pipeline reports a ratio of **1.27×** historical — **below** the 1.5× "severely adverse" threshold in the Register.
 
-This triggers investigation trigger **IT-05**. It is a directional check, not a reproduction of the 2008 crisis, and the notebook labels it as such. The comparison answers the question *"Is the scenario severe enough?"* It does not answer *"Would the portfolio have survived the 2008 crisis?"* — that would require the historical defaults themselves, not an average rate.
+This triggers investigation trigger **IT-05**. It is a directional check, not a reproduction of the 2008 crisis, and the notebook labels it as such. The comparison answers the question *"Is the scenario severe enough?"* It does not answer *"Would the portfolio have survived the 2008 crisis?"* — that would require the historical defaults themselves, not an average rate. And the comparison is **circular in a specific way** the disclaimer names: the Severely Adverse ECL is produced by the 3.0× PD multiplier, so the check tests whether the multiplier produces a result above the target, not whether the multiplier is right.
+
+### The 3.0× multiplier
+
+The Severely Adverse PD multiplier (3.0×) and LGD multiplier (1.5×) are **assumptions with a precedent label** — "the 2008 financial crisis" — not calibrated parameters. A validator should ask: what evidence supports 3.0× rather than 2.0× or 4.0×? The notebook's answer is the precedent, not a derivation. The notebook does not validate the multipliers; it tests them against a target and reports a miss (1.27× < 1.5×).
 
 ---
 
@@ -134,6 +153,10 @@ This triggers investigation trigger **IT-05**. It is a directional check, not a 
 **What this means.** Fair lending testing under ECOA (US), OSFI E-23 s.6.0 (Canada), and equivalent regimes requires testing on protected classes. The Fannie Mae public dataset does not contain them, and fair lending compliance **cannot be verified from this data**.
 
 The pipeline **does** run fairness testing on the geographic proxies it has — state, MSA, ZIP — and reports the results with an explicit `UNRELIABLE` flag, because the 4/5ths rule at cardinality 52 / 328 / 638 produces degenerate results (many groups with zero defaults → DI = 0.00%, which is not evidence of discrimination). Documented as Finding FM-R-09 and Limitation F-L2.
+
+**What "UNRELIABLE" means, and why it is not "Non-Compliant."** The 4/5ths rule is a disparate-impact test designed for binary or low-cardinality protected attributes (race, ethnicity, sex, marital status). Applied to geographic splits with hundreds of groups, the test is being used outside its intended scope. The `UNRELIABLE` flag is the notebook's mechanism for saying: *this test is degenerate; do not read the DI ratio as a finding*. The distinction matters: `UNRELIABLE` means *the test cannot tell you*, while `Non-Compliant` would mean *the test was performed and failed*. The notebook never writes the latter. The analyst, writing the Validation Opinion, can honestly write "Not Assessed" rather than "Non-Compliant" — because the notebook's flag is the evidence for that status.
+
+**Proxy risk that is not tested.** A variable correlated with default may be a proxy for something else — `NUM_BOR` (number of borrowers), for example, is plausibly a proxy for household structure and income pooling rather than a causal risk driver. A model that uses `NUM_BOR` may pick up a protected-class-correlated signal even when the variable itself is facially neutral. NB02 surfaces this question; the pipeline does not resolve it. **This is the deeper fair-lending exposure the pipeline does not test**, and the honest framing is that the pipeline names it rather than claiming to have addressed it.
 
 **What a production fair lending assessment would require.** Data containing protected attributes or geographic identifiers (ZIP code, census tract, ideally census-tract-level demographics). For US mortgage portfolios, this is available through HMDA reporting. For Canadian portfolios, an equivalent disclosure regime would need to be identified.
 
@@ -153,19 +176,44 @@ Each framework is assessed against what the project **actually demonstrates**, n
 
 A full regulatory mapping — including the specific requirements addressed, the evidence, and the gaps — is in `outputs/reports/regulatory_mapping_v2.csv` and `outputs/reports/compliance_report_v2.txt`.
 
+### Reading the regulatory status column
+
+The five statuses above are **analyst-level determinations of the project's scope**, not notebook-level verdicts. The distinction matters:
+
+- **"Methodology demonstration only"** — the pipeline implements the arithmetic of the standard, but the data does not support the full requirement.
+- **"Aligned with limitations"** — the practices follow the regulation's intent, but at least one required element is absent (in this case, fair-lending testing).
+- **"Partially aligned"** — some requirements are implemented, others are not; the gaps are named.
+- **"Not assessed"** — the data does not support the test. This is materially different from "failed the test." It means the test could not be performed.
+- **"Framework reference only"** — concepts are invoked but the implementation is not a calculation of the framework.
+
+**"Aligned with limitations" vs. "Compliant with limitations."** The README deliberately uses "aligned" rather than "compliant." "Compliant with limitations" is a status an institution writes in a Validation Opinion, against its own regulatory obligations. A demonstration project cannot award itself that status — the notebook forbids the word "Compliant" in its output (see the claim-authorization section). What the project *can* say is that its practices are aligned with the regulation's intent, with named limitations.
+
+### Citation verification
+
+Every regulatory citation in this README is intended to be verified against the standard's actual text. Two citation corrections carried through the pipeline:
+
+- **OSFI B-13 s.3.2 → OSFI E-23 Principle 3.2 (traceability).** B-13 is the Technology and Cyber Risk Management guideline, not the model risk guideline. The random seed's reproducibility purpose is served by E-23's traceability property, which is the correct citation.
+- **OSFI E-23 s.4.3 → OSFI E-23 s.4.2.** The data quality language in E-23 sits in section 4.2 ("Data"), not 4.3. The notebook and decision log cite 4.2.
+
+The remaining citations — IFRS 9 §5.5.3, §5.5.9, §5.5.11, §5.5.17, §5.5.18 — should be verified against the IFRS 9 PDF before treating them as final. The notebook structure is designed to make any correction a one-line change.
+
 ---
 
 ## The claim-authorization discipline
 
 **This is the feature that most distinguishes the project.** Every notebook in this pipeline deliberately stops short of writing a compliance verdict. The claim-authorization discipline is enforced in code:
 
+- **NB03** declares its scope in code comments and prints: "IFRS 9 methodology demonstration; SICR proxied, not satisfied." The word "Compliant" is not used.
 - **NB04** asserts that no fairness result contains a `PASS` token, and that high-cardinality results are flagged `UNRELIABLE`.
-- **NB05** asserts that the executive summary is a placeholder and that the report contains no `Compliant`, `Non-Compliant`, `PASS`, `FAIL`, `Adequate`, `Inadequate`, or `Validated` tokens.
+- **NB05** asserts that the executive summary is a placeholder and that the report contains no `Compliant`, `Non-Compliant`, `PASS`, `FAIL`, `Adequate`, `Inadequate`, or `Validated` tokens. The self-check message announces "completed," not "PASS."
+- **NB05** verifies that every artifact cited in the compliance table exists before the report is written (so the evidence column is checkable, not a dead reference).
 - **NB06** asserts that no ROC/AUC function is in the namespace (C5 scope guard — AUC does not apply to a calibration model).
 
 **Why this matters.** The pipeline produces **evidence**, not **verdicts**. Every compliance status in the report is an `[ANALYST: insert status]` placeholder. The analyst writes the verdict; the notebook supplies the evidence. This is deliberate — it keeps the tool from over-claiming and keeps the human in the loop.
 
 **The practical consequence.** A reader of this README who asks "is this IFRS 9 compliant?" will not find an answer here, because the project does not claim one. The answer belongs to the analyst, in the Validation Opinion — which is not in this repo, because this project is a framework, not a validated model.
+
+**What a governance artifact that reports its own limitations accurately looks like.** The final summary in NB05 says: *"This summary reports what the analysis actually produced, including limitations. A governance artifact that reports its own limitations accurately is more valuable than one that overstates its capabilities."* The v1.3 revision demonstrates this sentence in both directions. Three defects from v1.2 — a dead artifact reference, a success message that contained the token it forbade, and two stale regulatory citations — are fixed. A fourth issue surfaced by the run itself: the reconciliation check between the dataframe's `pd_estimate` mean and the NB03 contract value fires a warning that is definitional (per-loan PD vs. portfolio default rate), not a data defect. The warning should be reclassified, and the drift should be added to the Findings Register. The artifact reports the drift; it does not yet resolve it. That is the next version's work, and it is the discipline the sentence describes.
 
 ---
 
@@ -173,7 +221,7 @@ A full regulatory mapping — including the specific requirements addressed, the
 
 | Notebook | Focus | Key Outputs | Regulatory Link |
 |---|---|---|---|
-| 01 Data Loading | Quality & cleaning | Cleaned dataset (100,000 × 145), missing indicators, assumptions register, `data_quality_summary.json` | OSFI E-23 |
+| 01 Data Loading | Quality & cleaning | Cleaned dataset (100,000 × 175), missing indicators, assumptions register, `data_quality_summary.json` | OSFI E-23 |
 | 02 EDA | Risk factor analysis | Risk drivers, correlations, vintage patterns, t-test results | SR 11-7 (outcomes analysis) |
 | 03 Calibration | PD/LGD/EAD calibration | IFRS 9 parameters, stage classification, LGD/EAD construction, ECL per stage and per scenario, `notebook_03_parameters.json` | IFRS 9 |
 | 04 Stress Testing | Scenarios & coverage | Scenario ECLs, PD-cap sensitivity, severity check, coverage diagnostic, fairness assessment (UNRELIABLE at high cardinality) | IFRS 9, ECOA |
@@ -181,6 +229,15 @@ A full regulatory mapping — including the specific requirements addressed, the
 | 06 Power BI Export | Data export | Fact and dimension tables, data dictionary, manifest | Reporting |
 
 **Run the notebooks in order.** Each depends on artifacts produced by the preceding ones, and each asserts the presence of upstream contracts at start. A missing upstream file halts the notebook with a `FileNotFoundError` rather than silently falling back to defaults.
+
+### What each notebook teaches
+
+- **NB01** — how a central assumptions register works as a single source of truth; how audit logging turns "reproducibility" from a word into a timestamped artifact; how missing indicators are created *before* imputation, preserving the information that a value was absent.
+- **NB02** — how segment analysis works (banding a continuous variable, computing default rates per band, testing with chi-square); how correlation analysis works and what it does not tell you (the exclusion of `delinquency_state` as a target transform; the FICO/LTV multicollinearity finding); how vintage analysis works and why a three-year window with a confounded age effect is a *pattern*, not a *finding*.
+- **NB03** — how PD calibration works (unconditional PD, lifetime PD via survival, clipping); how LGD calibration works (base + linear adjustments); how EAD calculation works (prepayment, curtailment, and the CCF=0 judgment for term mortgages); how SICR staging works *and what happens when you cannot actually do it* (proxy, disclosed).
+- **NB04** — how scenario design works (four scenarios with documented macro rationales — narrated, not modelled); how probability-weighted ECL works (sum of scenario ECL × weight); how capital coverage differs from capital adequacy; how fair-lending testing works when it cannot be performed (the UNRELIABLE flag as the precondition for "Not Assessed").
+- **NB05** — how a compliance report separates what the tool computes from what the analyst declares; how the compliance matrix stays honest (every row has a verified evidence artifact and a status cell the tool is forbidden from filling); how a decision log makes every choice traceable to a regulatory provision; why "Compliant with limitations" belongs in the Validation Opinion, not in the tool.
+- **NB06** — how a star-schema export uses the vocabulary of dimensions and facts without encoding the joins (the schema lives in Power BI's model view, not the CSVs); how contract-read + reconciliation assertion replaces recomputation (the pattern that keeps the export consistent with the analysis); how the spec is itself a decision (omitting `dim_date` because no fact has a date key is a decision recorded in the spec, not a detection performed by code); how the data dictionary is the traceability artifact for the dashboard audience who never sees the notebooks.
 
 ---
 
@@ -243,7 +300,7 @@ Every notebook run produces an audit log, a `run_id` on every artifact, and a SH
 | Document | Description |
 |---|---|
 | `outputs/reports/ifrs9_compliance_report_v1_2.txt` | Compliance report with analyst placeholders |
-| `outputs/reports/pd_lgd_ead_calibration_summary_v1_3.txt` | PD/LGD/EAD calibration results |
+| `outputs/reports/pd_lgd_ead_calibration_summary_v1_2.txt` | PD/LGD/EAD calibration results |
 | `outputs/reports/decision_log_v1_2.txt` | 25 decisions with rationale |
 | `outputs/reports/manifest_pipeline_v1_2.csv` | Every analysis artifact, with hash |
 | `outputs/reports/notebook_03_parameters.json` | Calibration contract for downstream notebooks |

@@ -44,12 +44,14 @@ This project demonstrates all three on public Fannie Mae data, with every method
 ## What this framework does NOT demonstrate
 
 - **A production-calibrated ECL model** — parameters are assumption-based, not calibrated to a real bank's recovery data
-- **Independent validation** — there is no second-line validation of this pipeline; the Validation Opinion is authored by the analyst, not by a validation notebook
+- **Independent validation** — there is no second-line validation of this pipeline; **no Validation Opinion exists for this project, by design** (see "The framing correction" and the "GRC deliverables" section below)
 - **Fair-lending compliance** — the Fannie Mae public dataset contains no protected-class attributes and no usable geographic proxies
 - **Canadian applicability** — the pipeline is trained on U.S. data and is not validated for Canadian portfolios (OSFI E-23 scope restriction)
 - **IFRS 9 compliance** — IFRS 9 compliance is a determination an institution makes against its regulatory obligations, not a claim a demonstration project can make for itself
 
 **The last two are the most important.** A demonstration that over-claims is less useful than one that clearly names its limits.
+
+**On the absence of a Validation Opinion.** The Lending Club project (the companion repo) has a Validation Report because it is a *validated model*. The Fannie Mae project is a *framework* — a methodology demonstration, not a production model. **No Validation Opinion exists for the Fannie Mae project, and that is deliberate.** A framework that has not been validated should not have a Validation Opinion claiming it has. The framework's deliverables document what the pipeline computes and what it does not; the Validation Opinion is the Lending Club project's artifact because the Lending Club project is the one that was independently validated.
 
 ---
 
@@ -203,7 +205,7 @@ The remaining citations — IFRS 9 §5.5.3, §5.5.9, §5.5.11, §5.5.17, §5.5.1
 
 **This is the feature that most distinguishes the project.** Every notebook in this pipeline deliberately stops short of writing a compliance verdict. The claim-authorization discipline is enforced in code:
 
-- **NB03** declares its scope in code comments and prints: "IFRS 9 methodology demonstration; SICR proxied, not satisfied." The word "Compliant" is not used.
+- **NB03** declares its scope in code comments and prints: *"IFRS 9 methodology demonstration; SICR proxied, not satisfied."* The word "Compliant" is not used.
 - **NB04** asserts that no fairness result contains a `PASS` token, and that high-cardinality results are flagged `UNRELIABLE`.
 - **NB05** asserts that the executive summary is a placeholder and that the report contains no `Compliant`, `Non-Compliant`, `PASS`, `FAIL`, `Adequate`, `Inadequate`, or `Validated` tokens. The self-check message announces "completed," not "PASS."
 - **NB05** verifies that every artifact cited in the compliance table exists before the report is written (so the evidence column is checkable, not a dead reference).
@@ -264,20 +266,24 @@ A subset of the 25 documented decisions. Full decision log in `outputs/reports/d
 
 ## GRC deliverables
 
-| Artifact | Location | Description |
-|---|---|---|
-| Problem Definition Record (PDR) | `artifacts/PDR-PR004-v1.0.md` | Decision supported, population, target, constraints |
-| Analytical Specification (AS) | `artifacts/AS-PR004-v1.0.md` | Research questions, hypotheses, variables, success criteria |
-| Data Specification (DS) | `artifacts/DS-PR004-v1.0.md` | Data sources, lineage, missingness, leakage audit |
-| Feature Decision Log (FDL) | `artifacts/FDL-PR004-v1.0.md` | Feature selection criteria, transformations, proxies |
-| Methodology Document (MD) | `artifacts/MD-PR004-v1.0.md` | Candidates, selection, frozen parameters |
-| Risk & Validation Plan (RVP) | `artifacts/RVP-PR004-v1.0.md` | Thresholds, stability, drift, fairness, decision rules |
-| Decision Criteria Register (DCR) | `artifacts/DCR-PR004-v1.0.md` | Acceptable performance, drift, disparity, investigation triggers |
-| Findings Register | `outputs/reports/findings_register.csv` | Per-finding severity, evidence, owner, remediation |
-| Remediation Plan | `artifacts/Remediation-Plan-PR004-v1.0.md` | Sequenced actions with owners and deadlines |
-| Approval Record | `artifacts/Approval-Record-PR004-v1.0.md` | Sign-off chain, monitoring conditions, next review |
+Nine project-governance artifacts support this framework. They live in the `governance/` folder. Each carries a version, freeze timestamp, and change log; once frozen, an artifact can only be changed via a version bump with documented rationale.
 
-Each artifact carries a version, freeze timestamp, and change log. Once frozen, an artifact can only be changed via a version bump with documented rationale.
+| Artifact | File | Description |
+|---|---|---|
+| Problem Definition Record | `governance/problem-definition.md` | Decision supported, population, target, constraints |
+| Analytical Specification | `governance/analytical-specification.md` | Research questions, hypotheses, variables, success criteria |
+| Feature Decision Logs | `governance/feature-decision-logs.md` | Feature selection criteria, transformations, proxies |
+| Methodology Document | `governance/methodology-document.md` | Candidates, selection, frozen parameters |
+| Risk & Validation Plan | `governance/risk-validation-plan.md` | Thresholds, stability, drift, fairness, decision rules |
+| Decision Criteria Register | `governance/decision-criteria-register.md` | Acceptable performance, drift, disparity, investigation triggers |
+| Consolidated Findings Register | `governance/consolidated-findings-register.md` | Cross-reference of findings across the pipeline (the markdown consolidation of `outputs/reports/findings_register.csv`) |
+| Approval Record | `governance/approval-record.md` | Sign-off chain, monitoring conditions, next review |
+| Analysis Code & Results | `governance/code-analysis-results.md` | Index to the notebooks and a summary of their results |
+
+### Two governance artifacts that are not in the folder, and why
+
+- **Data Specification.** The Lending Club project has a `data-specifications.md` governance artifact. The Fannie Mae project does not have an equivalent **because the data lineage and missingness audit is embedded in the notebook outputs** (`data_quality_summary.json`, the assumptions register, and NB01's Phase 2–Phase 6 output) rather than consolidated in a standalone markdown document. A reader who wants the data specification follows the notebook outputs.
+- **Validation Opinion.** The Lending Club project has a Validation Opinion (in progress). The Fannie Mae project does not — **by design**. The Fannie Mae project is a *framework*, not a validated model. A framework that has not been independently validated should not have a Validation Opinion claiming it has. This is the deliberate design decision described in "What this framework does NOT demonstrate."
 
 ---
 
@@ -306,12 +312,13 @@ Every notebook run produces an audit log, a `run_id` on every artifact, and a SH
 | `outputs/reports/notebook_03_parameters.json` | Calibration contract for downstream notebooks |
 | `outputs/reports/notebook_04_results.json` | Stress-testing and fairness results |
 | `powerbi_exports/data_dictionary.md` | Column-level documentation with limitations embedded |
+| `governance/` | Nine project-governance artifacts — see the "GRC deliverables" section above |
 
 ---
 
 ## Related repositories
 
-- [model-analysis-package](https://github.com/MiltonGreat/model-analysis-package) — the MAP anchor: five governance deliverables, including this project's Stress Testing Framework
+- [model-analysis-package](https://github.com/MiltonGreat/model-analysis-package) — the MAP anchor: the governance framework (AI Governance Policy, Regulatory Gap Analysis, Vendor Governance Review Template) and the package deliverables
 - [lending-club-model-validation](https://github.com/MiltonGreat/credit-risk-model-validation) — the companion independent validation
 
 ## License

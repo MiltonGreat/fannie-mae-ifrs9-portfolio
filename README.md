@@ -266,7 +266,7 @@ A subset of the 25 documented decisions. Full decision log in `outputs/reports/d
 
 ## GRC deliverables
 
-**Ten** project-governance artifacts support this framework. They live in the `governance/` folder. Each carries a version, freeze timestamp, and change log; once frozen, an artifact can only be changed via a version bump with documented rationale.
+**Eleven** project-governance artifacts support this framework. They live in the `governance/` folder. Each carries a version, freeze timestamp, and change log; once frozen, an artifact can only be changed via a version bump with documented rationale.
 
 | Artifact | File | Description |
 |---|---|---|
@@ -278,12 +278,13 @@ A subset of the 25 documented decisions. Full decision log in `outputs/reports/d
 | Risk & Validation Plan | `governance/risk-validation-plan.md` | Thresholds, stability, drift, fairness, decision rules, self-assessment components |
 | Decision Criteria Register | `governance/decision-criteria-register.md` | Acceptable performance, drift, disparity, investigation triggers, guard results |
 | Consolidated Findings Register | `governance/consolidated-findings-register.md` | Cross-reference of findings across the pipeline (the markdown consolidation of the FM findings register) |
+| Remediation Plan | `governance/remediation-plan.md` | Sequenced actions with owners, deadlines, and closure evidence for the 13 FM findings |
 | Approval Record | `governance/approval-record.md` | Sign-off chain, monitoring conditions, next review |
 | Analysis Code & Results | `governance/code-analysis-results.md` | Index to the notebooks and a summary of their results |
 
 ### One governance artifact that is not in the folder, and why
 
-- **Validation Opinion.** The Lending Club project has a Validation Opinion (in progress). The Fannie Mae project does not — **by design**. The Fannie Mae project is a *framework*, not a validated model. A framework that has not been independently validated should not have a Validation Opinion claiming it has. This is the deliberate design decision described in "What this framework does NOT demonstrate."
+**Eleven of the twelve MAP deliverables exist; the Validation Opinion is N/A by design.** The Lending Club project has a Validation Opinion (in progress). The Fannie Mae project does not — **by design**. The Fannie Mae project is a *framework*, not a validated model. A framework that has not been independently validated should not have a Validation Opinion claiming it has. This is the deliberate design decision described in "What this framework does NOT demonstrate."
 
 ---
 
@@ -312,7 +313,7 @@ Every notebook run produces an audit log, a `run_id` on every artifact, and a SH
 | `outputs/reports/notebook_03_parameters.json` | Calibration contract for downstream notebooks |
 | `outputs/reports/notebook_04_results.json` | Stress-testing and fairness results |
 | `powerbi_exports/data_dictionary.md` | Column-level documentation with limitations embedded |
-| `governance/` | Ten project-governance artifacts — see the "GRC deliverables" section above |
+| `governance/` | **Eleven** project-governance artifacts — see the "GRC deliverables" section above |
 
 **On the two registers.** The `governance/consolidated-findings-register.md` is the **FM Consolidated Findings Register** — the 13 methodology limitations (L1–L10 plus the three NB01 data-preparation findings). The `outputs/reports/findings_register.csv` is **NB01's data-preparation findings register** — the three findings NB01 produced in its Phase 8. **The two files are different:** the consolidated register is the full cross-pipeline register; the NB01 register is one notebook's contribution to it. A reader who wants the complete picture reads the consolidated register; a reader who wants to understand NB01's specific findings reads the NB01 register.
 

@@ -1,7 +1,7 @@
 # Fannie Mae IFRS 9 ECL Demonstration — Decision Criteria Register
 
 **Document ID:** FM-DCR-001  
-**Version / Status:** 1.4 / Frozen at NB03 v1.3 execution (run_id `20261021_121550`)  
+**Version / Status:** 1.5 / Frozen at NB03 v1.3 execution (run_id `20261021_121550`)  
 **Project:** Fannie Mae — IFRS 9 ECL methodology demonstration  
 **Document type:** Decision Criteria Register (DCR)  
 **Frozen at:** NB03 v1.3 execution (run_id `20261021_121550`)  
@@ -15,10 +15,10 @@
 |---|---|
 | **Purpose** | Define every decision criterion in the Fannie Mae pipeline: parameter bounds, staging thresholds, register guard bands, scenario weights, reproducibility requirements |
 | **Criterion families** | §3.1 Parameter bounds · §3.2 Staging thresholds · §3.3 Register guards · §3.4 Scenario criteria · §3.5 Reproducibility |
-| **This run's guard results** | AP-02 PASS · **AP-03 OUTSIDE FAILURE BAND (expected)** · AP-04 PASS |
+| **This run's guard results** | AP-02 PASS · **AP-03 OUTSIDE FAILURE (expected)** · AP-04 PASS |
 | **Where results live** | This document (§4 results against criteria) — **the only Fannie Mae governance document where measured values belong** |
 | **Authority for threshold changes** | Methodology Owner (sole approver) |
-| **Version chain** | v1.3 → v1.4 (this revision — structural; no threshold changes) → v2.0 (on any MAJOR threshold change) |
+| **Version chain** | v1.3 → v1.4 (structural) → v1.5 (this revision — §4.1 table split into guard result + interpretation; no threshold changes) |
 
 > **Document purpose.** This register records every decision criterion used in the Fannie Mae pipeline: the register guard thresholds (AP-02, AP-03, AP-04), the parameter bounds (PD cap, LGD floor/cap, CCF), the staging thresholds (Stage 1/2/3 boundaries), the scenario weights and multipliers, and the reproducibility requirements.
 >
@@ -150,13 +150,15 @@ This section reports the measured values against the criteria in §3, the pass/f
 
 ### 4.1 — Register guard results
 
-| Guard | Measured | Band status | Status |
+| Guard | Measured | Band status | Interpretation |
 |---|---|---|---|
-| AP-02 (LGD) | 44.28% | Inside target band (40–60%) | **PASS** |
-| AP-03 (EAD) | 86.95% | **Outside failure band (50–85%)** | **OUTSIDE FAILURE — expected** |
-| AP-04 (ECL) | 1.09% | Inside target band (1–3%) | **PASS** |
+| AP-02 (LGD) | 44.28% | Inside target band (40–60%) | Expected outcome — no action |
+| AP-03 (EAD) | 86.95% | **Outside failure band (50–85%)** | **Expected** — young portfolio (avg age 16 months); documented in FM-DS-001 §6.2 and MAP-STF-FM-001 §7 |
+| AP-04 (ECL) | 1.09% | Inside target band (1–3%) | Expected outcome — no action |
 
-**On AP-03's "expected" status.** The 86.95% EAD ratio is outside the 50–85% failure band. **The DCR says this is expected on a young portfolio** — the average loan age is 16 months, mostly 2021–2023 vintages, so prepayment and curtailment have not had time to reduce EAD. **The guard fires as designed**; the analyst documents the cause; it is not a methodology defect, it is a feature of the data. See FM-DS-001 §6.2 for the "young portfolio" mechanism and MAP-STF-FM-001 §7 for the framework observation.
+**On the two-column structure.** The **"Band status"** column is the register's factual result — the measured value against the band. The **"Interpretation"** column is the analyst's reading of that result — expected, unexpected, or under investigation. The two columns are separated because a register guard's *result* and the analyst's *reading of the result* are different things: AP-03 **is** outside the failure band (factual), and AP-03 **being outside the failure band is expected** on a young portfolio (analyst judgment). A reader who sees only "OUTSIDE FAILURE" without the "expected" interpretation might conclude the methodology has failed; a reader who sees only "expected" without the "OUTSIDE FAILURE" result might conclude the guard didn't fire. Both columns are needed.
+
+**On AP-03's expected status.** The 86.95% EAD ratio is outside the 50–85% failure band. **The DCR says this is expected on a young portfolio** — the average loan age is 16 months, mostly 2021–2023 vintages, so prepayment and curtailment have not had time to reduce EAD. **The guard fires as designed**; the analyst documents the cause; it is not a methodology defect, it is a feature of the data. See FM-DS-001 §6.2 for the "young portfolio" mechanism and MAP-STF-FM-001 §7 for the framework observation.
 
 **On the two-tier structure.** A value outside the target band but inside the failure band triggers investigation (WARNING in the audit log). A value outside the failure band triggers escalation (ERROR in the audit log). AP-03 is outside the failure band, so it logged an ERROR. The analyst must document it — which the DCR does, in this section.
 
@@ -212,7 +214,7 @@ This section reports the measured values against the criteria in §3, the pass/f
 | **OUTSIDE TARGET** | Within failure band but outside target | Document; investigate |
 | **OUTSIDE FAILURE** | Outside failure band | Document; escalate if unexpected |
 
-**On this run:** AP-02 PASS, **AP-03 OUTSIDE FAILURE (expected)**, AP-04 PASS.
+**On this run:** AP-02 PASS, **AP-03 OUTSIDE FAILURE (interpreted as expected)**, AP-04 PASS.
 
 ### 5.2 — The methodology's status statement
 
@@ -265,17 +267,21 @@ The Fannie Mae DCR uses three register guards, each with a **two-tier structure*
 | Scenario weight change | **MAJOR** | Methodology Owner approval; re-run | Changing baseline from 45% to 50% |
 | Adding a new guard | **MINOR** | Validator approval; documented | Adding AP-05 for a new metric |
 | Clarifying wording | **PATCH** | No approval; documented | Fixing a typo in DCR §3 |
+| Structural reorganization (no threshold change) | **MINOR** | No approval; documented | §3/§4/§5 reorganization (v1.3 → v1.4) |
 
-**The rule:** any change that affects a parameter or a register guard's behavior is a **MAJOR** version bump. The Fannie Mae DCR is more sensitive to version bumps than Lending Club's — **because the parameters are frozen in code**, changing them requires a full pipeline re-run.
+**The rule:** any change that affects a parameter or a register guard's behavior is a **MAJOR** version bump. **A structural reorganization that does not change any threshold is a MINOR version bump**, because it does not affect the pipeline's output — a reader comparing versions finds the same thresholds in different sections. **A wording clarification is a PATCH.** The Fannie Mae DCR is more sensitive to MAJOR bumps than Lending Club's — **because the parameters are frozen in code**, changing them requires a full pipeline re-run.
 
 ### 7.2 — Version history
 
 | Version | Date | Change | Type |
 |---|---|---|---|
 | 1.3 | (frozen at NB03 v1.3) | — | — |
-| 1.4 | (this revision) | Structural reorganization: catalogue/results separation, results against criteria in §4, verdict record in §5, LC/AP naming distinction added | MINOR |
+| 1.4 | (frozen at NB03 v1.3) | Structural reorganization: catalogue/results separation, results against criteria in §4, verdict record in §5, LC/AP naming distinction added | MINOR |
+| 1.5 | (this revision) | §4.1 table split into "Band status" (factual result) and "Interpretation" (analyst judgment); §5.1 and §7.1 aligned to the new column structure. **No threshold values changed.** | MINOR |
 
-**On the v1.3 → v1.4 version bump.** The change is **structural**: §3 is now criterion catalogue only, §4 is results against criteria, §5 is the verdict record, and the LC/AP naming distinction is explicit. **No threshold values changed** — a reader can compare v1.3 and v1.4 and find the same PD cap, LGD bands, AP-02/03/04 thresholds, scenario weights, and reproducibility criteria. The version bump is MINOR because the criteria are identical to v1.3.
+**On the v1.4 → v1.5 version bump.** The change is **structural** — the register guard results table now distinguishes "the guard fired" (factual) from "the result is expected" (analyst interpretation). **No threshold values changed** — a reader can compare v1.4 and v1.5 and find the same PD cap, LGD bands, AP-02/03/04 thresholds, scenario weights, and reproducibility criteria. The version bump is MINOR because the criteria are identical to v1.4.
+
+**On the v1.3 → v1.4 version bump.** Same reasoning — the v1.3 → v1.4 change was a structural reorganization, no threshold changes, classified as MINOR. The two MINOR bumps in a row reflect two successive structural improvements, not two policy changes.
 
 ---
 
@@ -293,8 +299,9 @@ The Fannie Mae DCR uses three register guards, each with a **two-tier structure*
 
 **The authority chain:**
 
+```
 IFRS 9 Modeler (proposes) → Validator (reviews) → Methodology Owner (approves)
-
+```
 
 **Unlike Lending Club, the validator's role in DCR changes is advisory, not approval.** The Methodology Owner has the final authority. This is because the parameters are specified, not learned — there is less need for independent validation of the parameter values themselves. **The validator's role in Fannie Mae is to assess the framework (MAP-STF-FM-001), not to approve DCR threshold changes.**
 
@@ -325,4 +332,3 @@ IFRS 9 Modeler (proposes) → Validator (reviews) → Methodology Owner (approve
 ---
 
 *End of document.*
-

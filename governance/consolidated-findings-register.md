@@ -1,7 +1,7 @@
 # Fannie Mae IFRS 9 ECL Demonstration — Consolidated Findings Register
 
 **Document ID:** FM-CFR-001  
-**Version / Status:** 1.4 / Frozen at NB03 v1.3 execution (run_id `20261021_121550`)  
+**Version / Status:** 1.5 / Frozen at NB03 v1.3 execution (run_id `20261021_121550`)  
 **Project:** Fannie Mae — IFRS 9 ECL methodology demonstration  
 **Document type:** Consolidated Findings Register (CFR)  
 **Source registers:** `outputs/reports/notebook_03_limitations.csv`, the NB03 findings register (L1–L10), and the NB01 findings  
@@ -79,7 +79,7 @@ The consolidated register has 12 columns per finding:
 
 **The NB01 findings are data-preparation limitations.** The sample size is a documented scope limitation (the 100K sample is representative but not exhaustive). The U.S. data limitation is the jurisdictional issue. The constructed `pd_estimate` is the most important — it is the methodology's core assumption, and it is documented in FM-FDL-001 §5.2.
 
-**On the severity of the NB01 findings.** The v1.3 register listed L-01.01 as HIGH, L-01.02 as MEDIUM, L-01.03 as MEDIUM. The v1.4 register lists all three as LOW. **The severity is a judgment call.** The v1.4 severity reflects that these are **scope limitations** (the sample size is a scope choice, the U.S. data is a scope choice, the constructed `pd_estimate` is a methodology choice), not **defects**. A scope limitation is LOW because it does not require remediation; it requires disclosure. If you want to keep the v1.3 severities (HIGH/MEDIUM/MEDIUM), the register still works — the severity column is a labeling choice, and the "why" is in the description. **My recommendation is LOW for all three**, because they are consistently scope limitations, and mixing severities for scope limitations suggests some are more remediable than others. Your call.
+**On the severity reassignment in v1.4.** The v1.3 register assigned HIGH/MEDIUM/MEDIUM severities to L-01.01, L-01.02, L-01.03. The v1.4 register reassigned them all LOW. **The reassignment is deliberate**: these are scope limitations, not defects, and "LOW" is the right severity for a finding that requires disclosure, not remediation. **The change is recorded in the version history (see §7.2).** If you want to keep the v1.3 severities, the register still works — the severity column is a labeling choice, and the "why" is in the description. **My recommendation is LOW for all three**, because they are consistently scope limitations, and mixing severities for scope limitations suggests some are more remediable than others.
 
 ### 3.2 — NB02 (EDA) — 0 findings
 
@@ -133,7 +133,7 @@ The consolidated register has 12 columns per finding:
 
 **On the HIGH findings.** L1 (PD-LGD correlation is constructed), L2 (SICR proxy), L6 (PD cap), L7 (fairness not tested), L8 (U.S. data) — these are the substantive limitations. A validator who reads only the HIGH findings gets the full picture of the methodology's defensibility. **The HIGH findings are not defects** — they are limitations that a production implementation would need to address, but that the demonstration discloses.
 
-**On the LOW findings (NB01).** The v1.3 register assigned HIGH/MEDIUM/MEDIUM severities to L-01.01, L-01.02, L-01.03. The v1.4 register assigns LOW to all three. See §3.1 for the rationale — they are scope limitations, not defects. **If you want to keep the v1.3 severities, the register still works**, but the inconsistency (a "HIGH" finding that is a scope limitation) is worth reconsidering. Your call.
+**On the LOW findings (NB01).** The v1.3 register assigned HIGH/MEDIUM/MEDIUM severities to L-01.01, L-01.02, L-01.03. The v1.4 register reassigned them all LOW. **The reassignment is recorded in the version history (see §7.2)** and is deliberate: they are scope limitations, not defects. **If you want to keep the v1.3 severities, the register still works**, but the inconsistency (a "HIGH" finding that is a scope limitation) is worth reconsidering. Your call.
 
 ---
 
@@ -191,9 +191,21 @@ The Fannie Mae register has **no cross-register chain in the same sense as Lendi
 
 **On the routing column.** Each open item is routed to a **MAP-RP-001 finding** (which has an owner, timeline, and closure evidence) and — where applicable — to a **DCR open item** (which is a proposed threshold change under the DCR's own change-control chain). **The CFR does not have its own open items** — the limitations are closed by the framework document's observations, not by a CFR-specific process. **The CFR's "0 OPEN" status is therefore not the whole story** — the open work is in the Remediation Plan, the DCR, and the framework document.
 
-**On the v1.3 register's "No open findings" claim.** The v1.3 register said "No open findings. The methodology is complete with documented limitations." That claim is correct as a statement about the CFR's contents, but it is misleading as a statement about the project. **The v1.4 register clarifies** — the CFR's open items are routed to their actual tracking locations, and the register's "0 OPEN" is explicitly framed as "about the register, not the project."
+**On the v1.3 register's "No open findings" claim.** The v1.3 register said "No open findings. The methodology is complete with documented limitations." That claim is correct as a statement about the CFR's contents, but it is misleading as a statement about the project. **The v1.4 register clarified this** — the CFR's open items are routed to their actual tracking locations, and the register's "0 OPEN" is explicitly framed as "about the register, not the project." **The v1.5 register preserves this clarification.**
 
-### 7.2 — Dependencies
+### 7.2 — Version history
+
+| Version | Date | Change | Type |
+|---|---|---|---|
+| 1.3 | (frozen at NB03 v1.3) | Original 13-finding register; L-01.01–L-01.03 assigned HIGH/MEDIUM/MEDIUM severities | — |
+| 1.4 | (frozen at NB03 v1.3) | L-01.01–L-01.03 severities reassigned to LOW (scope limitations, not defects); §7.1 open-item routing clarified; "0 OPEN" framing clarified as register-scope, not project-scope | MINOR (severity reassignment; no findings added or removed) |
+| 1.5 | (this revision) | Version history added to §7.2 to record the v1.4 severity reassignment; no content changes | PATCH (documentation of a prior change) |
+
+**On the v1.4 → v1.5 version bump.** This revision only adds the version-history table (§7.2) to record the v1.4 severity reassignment. **No findings, severities, or statuses changed.** The version is PATCH because the change is documentation of a prior version, not a substantive change.
+
+**On the v1.3 → v1.4 version bump.** The severity reassignment of L-01.01–L-01.03 from HIGH/MEDIUM/MEDIUM to LOW is the substantive change. It is classified as MINOR because no findings were added or removed and no statuses changed — the severity column is a labeling choice, and the reassignment makes the labeling consistent (scope limitations are LOW, not HIGH). **The reassignment is deliberate**, and this version history records it so a reader who compares v1.3 and v1.4 can see the change.
+
+### 7.3 — Dependencies
 
 | Category | Dependency |
 |---|---|

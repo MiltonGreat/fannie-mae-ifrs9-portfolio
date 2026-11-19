@@ -64,23 +64,8 @@ If neither file exists, NB01 raises `FileNotFoundError` and halts immediately. T
 
 ### 3.1 Pipeline Lineage
 
-Fannie Mae.zip → train4.csv (1,672,822 rows × 133 cols)
-       │
-       ▼
-NB01 Phase 2: random sample (seed 42) → 100,000 rows
-       │
-       ▼
-NB01 Phase 3–6: target verification check, missingness analysis,
-                leakage detection, temporal audit, feature inventory
-       │
-       ▼
-fannie_mae_final_clean.csv (100,000 × 175)
-       │  content hash: bc5263ca06d29037
-       │  (baseline run: 20261021_121434)
-       ▼
-NB02–NB06: downstream pipeline
-       │
-       ▼
+<img width="628" height="424" alt="screenshot-gemini google com-2026 11 19-11_47_37" src="https://github.com/user-attachments/assets/ee4a35fe-d0d8-4bbe-a25a-1b05cbae4074" />
+
 NB03 parameters: outputs/notebook_03_parameters.json
 NB04 results:    outputs/notebook_04_results.json
 

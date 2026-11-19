@@ -2,9 +2,9 @@
 
 | Metadata Field | Value |
 | :--- | :--- |
-| **Document ID** | `[ANALYST: Document ID — cross-referenced elsewhere as FM-FDL-001]` |
-| **Version** | `0.1.0-draft` (Forward-Looking Planning Draft) |
-| **Run ID / Timestamp** | `YYYYMMDD_HHMMSS` *(literal placeholder — link to active execution run log on run)* |
+| **Document ID** | `FM-FDL-001` *(proposed — pending analyst confirmation; cross-referenced as FM-FDL-001 in A02 §3.4 and A03 §6.1)* |
+| **Version** | `0.2.0-draft` (Forward-Looking Planning Draft) |
+| **Run ID / Timestamp** | `YYYYMMDD_HHMMSS` *(literal placeholder; A04 is a planning document and is not bound to a run. Record a run ID only when this log is reviewed against a specific execution artifact.)* |
 | **Author / Owner** | `[ANALYST: name, role]` |
 | **Project Scope** | IFRS 9 Expected Credit Loss (ECL) Methodology Demonstration (Public Data) |
 | **Artifact Type** | Planning document — records feature decisions to be built, not a run record |
@@ -36,7 +36,7 @@
 
 ### 1.2 — Inputs (enumerated as verifiable from A01–A03)
 
-The following features are named as PD/LGD/EAD inputs in A02 §3.2. Each is enumerated here with its role. Verification against the full `feature_inventory.csv` is required before this list can be treated as the complete included-feature set.
+> **⚠ INCOMPLETE — awaiting `feature_inventory.csv`.** The table below is the set of features verifiable from A02 §3.2 only. It is **not** the complete included-feature set. The complete set is the `INCLUDE` decisions in `feature_inventory.csv` (per A03 §6.1). Any `INCLUDE` feature in the inventory that does not appear below must be added here by the analyst before this section is complete.
 
 | Feature | Role (per A02 §3.2) | Status |
 | :--- | :--- | :--- |
@@ -49,8 +49,6 @@ The following features are named as PD/LGD/EAD inputs in A02 §3.2. Each is enum
 | `PROP_TYPE` | LGD covariate | `[VERIFY: feature_inventory.csv]` |
 | `OCCU_STAT` | Possible signal | `[VERIFY: feature_inventory.csv]` |
 
-> **Coverage note:** This is not asserted as the complete included-feature list. The complete list is the set of `INCLUDE` decisions in `feature_inventory.csv` (per A03 §6.1). This section enumerates only what is verifiable from A01–A03; any feature in `feature_inventory.csv` marked `INCLUDE` that does not appear above must be added here by the analyst.
-
 **Inclusion rule (planning):** A feature is included if and only if (i) `feature_inventory.csv` records an `INCLUDE` decision, (ii) it does not match `KNOWN_LEAKAGE` (A03 §7.1), and (iii) it passes the NB01 Phase 5 leakage scan without an unresolved flag routed to A04.
 
 **Status:** `Decided` for the named exclusions in §1.1; `Deferred to feature_inventory.csv / NB01 — owner: [ANALYST: role]` for the complete included-feature enumeration in §1.2.
@@ -59,20 +57,9 @@ The following features are named as PD/LGD/EAD inputs in A02 §3.2. Each is enum
 
 ## 2. How is each feature transformed?
 
-> **Planning note:** This section records the intended transform for each feature. Where a transform is not yet decided, the decision is deferred to the named artifact/owner.
+**Collapsed to pointer per analyst decision.** Per-feature transform specification is owned by **A02 §3.3** (Constructed Parameters) and the NB03 specification. A04 records the decision that transforms are owned there; it does not enumerate per-feature transforms.
 
-| Feature | Intended transform | Status |
-| :--- | :--- | :--- |
-| `FICO_BOR` | `[ANALYST: intended transform — e.g., passthrough / binning / capped linear]` | `Deferred to A02 §3.3 / NB03 — owner: [ANALYST: role]` |
-| `ORG_LTV` | `[ANALYST: intended transform]` | `Deferred to A02 §3.3 / NB03 — owner: [ANALYST: role]` |
-| `DTI` | `[ANALYST: intended transform]` | `Deferred to A02 §3.3 / NB03 — owner: [ANALYST: role]` |
-| `AGE` | `[ANALYST: intended transform]` | `Deferred to A02 §3.3 / NB03 — owner: [ANALYST: role]` |
-| `ORG_UPB` | `[ANALYST: intended transform]` | `Deferred to A02 §3.3 / NB03 — owner: [ANALYST: role]` |
-| `ORG_CLTV` | `[ANALYST: intended transform]` | `Deferred to A02 §3.3 / NB03 — owner: [ANALYST: role]` |
-| `PROP_TYPE` | `[ANALYST: intended encoding]` | `Deferred to A02 §3.3 / NB03 — owner: [ANALYST: role]` |
-| `OCCU_STAT` | `[ANALYST: intended encoding]` | `Deferred to A02 §3.3 / NB03 — owner: [ANALYST: role]` |
-
-> **Constructed parameters** (`pd_estimate`, `lgd_final`, `ead_final`) are specified in A02 §3.3 and are not duplicated here as feature transforms. Their construction is recorded in A02/A05.
+> Constructed parameters (`pd_estimate`, `lgd_final`, `ead_final`) are specified in A02 §3.3 and are not duplicated here. Their construction is recorded in A02/A05.
 
 **Status:** `Deferred to A02 §3.3 / NB03 — owner: [ANALYST: role]`
 
@@ -82,11 +69,11 @@ The following features are named as PD/LGD/EAD inputs in A02 §3.2. Each is enum
 
 | Proxy | Intended concept | Gap introduced | Mitigation |
 | :--- | :--- | :--- | :--- |
-| `default` as `90+ DPD` (as recorded in the A04 feature block) | A credit event resulting in loss | Forbearance, modification, and short sale are not captured | Documented as a limitation; industry standard. **Target framing is owned by A01 §5 / A02 §1 — see deferral note below.** |
+| `default` as `90+ DPD` (as recorded in the earlier A04 feature block) | A credit event resulting in loss | Forbearance, modification, and short sale are not captured | Documented as a limitation; industry standard. **Target framing is owned by A01 §5 / A02 §1 — see deferral note below.** |
 | `delinquency_state` (Stage 3 driver: `default × 5` / `>= 3`) | IFRS 9 Stage 3 / credit-impaired proxy | Stage 3 is a construction, not an observed IFRS 9 Stage 3 (C6 limitation) | Documented as `C6` / `L2` in `FM-CFR-001`. |
 | Top-decile SICR proxy (Stage 2 driver) | IFRS 9 Stage 2 SICR | Stage 2 is SICR-by-construction, not observed credit deterioration (`L2`) | Documented as `L2`; mechanism in A05 §5.2. |
 
-> **Deferral note on the target-proxy threshold:** The A04 feature block recorded `90+ DPD`; A01 §5 and A02 §1 record a `16+` day framing. A04 does not restate the threshold — the target framing is **owned by A01/A02**. A04 records only that a proxy exists and what gap it introduces. The threshold itself should be read from A01 §5.
+> **Deferral note on the target-proxy threshold:** The earlier A04 feature block recorded `90+ DPD`; A01 §5 and A02 §1 record a `16+` day framing. A04 does not restate the threshold — the target framing is **owned by A01/A02**. A04 records only that a proxy exists and what gap it introduces. The threshold itself should be read from A01 §5.
 
 **Status:** `Decided` for the proxy list and gaps above; `Deferred to A01 §5 / A02 §1 — owner: [ANALYST: role]` for the target-proxy threshold itself.
 
@@ -94,18 +81,18 @@ The following features are named as PD/LGD/EAD inputs in A02 §3.2. Each is enum
 
 ## 4. Why does each feature matter (business meaning)?
 
-> **Planning note:** This section records the intended business meaning per feature. Where the meaning is not yet decided, it is deferred to the named artifact/owner.
+> **Planning note:** This section records one-line *intended* business meanings per feature, as analyst placeholders. The meanings are the analyst's judgment; A04 records the decision to assign a meaning per feature, not the wording. Replace each `[ANALYST: intended meaning]` before this section is complete.
 
-| Feature | Business meaning (intended) | Status |
+| Feature | Intended business meaning | Status |
 | :--- | :--- | :--- |
-| `FICO_BOR` | Borrower creditworthiness at origination; primary PD driver | `Deferred to A02 / NB02 — owner: [ANALYST: role]` |
-| `ORG_LTV` | Leverage at origination; PD driver and LGD covariate (collateral cushion) | `Deferred to A02 / NB02 — owner: [ANALYST: role]` |
-| `DTI` | Borrower repayment burden; PD driver | `Deferred to A02 / NB02 — owner: [ANALYST: role]` |
-| `AGE` | Loan seasoning; PD driver and LGD covariate | `Deferred to A02 / NB02 — owner: [ANALYST: role]` |
-| `ORG_UPB` | Exposure at origination; EAD input | `Deferred to A02 / NB02 — owner: [ANALYST: role]` |
-| `ORG_CLTV` | Combined leverage; LGD covariate | `Deferred to A02 / NB02 — owner: [ANALYST: role]` |
-| `PROP_TYPE` | Collateral type; LGD covariate | `Deferred to A02 / NB02 — owner: [ANALYST: role]` |
-| `OCCU_STAT` | Occupancy status; possible risk signal | `Deferred to A02 / NB02 — owner: [ANALYST: role]` |
+| `FICO_BOR` | `[ANALYST: intended meaning]` | `Deferred to A02 / NB02 — owner: [ANALYST: role]` |
+| `ORG_LTV` | `[ANALYST: intended meaning]` | `Deferred to A02 / NB02 — owner: [ANALYST: role]` |
+| `DTI` | `[ANALYST: intended meaning]` | `Deferred to A02 / NB02 — owner: [ANALYST: role]` |
+| `AGE` | `[ANALYST: intended meaning]` | `Deferred to A02 / NB02 — owner: [ANALYST: role]` |
+| `ORG_UPB` | `[ANALYST: intended meaning]` | `Deferred to A02 / NB02 — owner: [ANALYST: role]` |
+| `ORG_CLTV` | `[ANALYST: intended meaning]` | `Deferred to A02 / NB02 — owner: [ANALYST: role]` |
+| `PROP_TYPE` | `[ANALYST: intended meaning]` | `Deferred to A02 / NB02 — owner: [ANALYST: role]` |
+| `OCCU_STAT` | `[ANALYST: intended meaning]` | `Deferred to A02 / NB02 — owner: [ANALYST: role]` |
 
 **Status:** `Deferred to A02 / NB02 — owner: [ANALYST: role]`
 
@@ -124,7 +111,7 @@ The following features are named as PD/LGD/EAD inputs in A02 §3.2. Each is enum
 | Temporal stability of feature–target relationship (where observable) | Whether the univariate signal is stable over time | NB02 / NB03 | `Deferred to NB02/NB03 — owner: [ANALYST: role]` |
 | Populated-feature stability set | The exact features for which stability is assessed | NB02 | `Open — decision needed by NB02 kickoff` |
 
-> **Moved content note:** LGD construction (base 0.45 + age/LTV/property adjustments, clipped `[0.10, 0.90]`) is recorded in **A05 (Methodology Document)**, not here. The earlier note that LGD is a function of PD and not empirically calibrated, and that its mean is a construction artifact, travels with that paragraph to A05.
+> **Moved content note:** LGD construction (base 0.45 + age/LTV/property adjustments, clipped `[0.10, 0.90]`) is recorded in **A05 (Methodology Document)**, not here. The earlier note that LGD is a function of PD and not empirically calibrated, and that its mean is a construction artifact, travels with that paragraph to A05. **A05 must actually contain this paragraph; the pointer dangles until it does.** Tracked in §7 row 7.
 
 **Status:** `Deferred to NB02 — owner: [ANALYST: role]` for the planned evidence; `Open — decision needed by NB02 kickoff` for the populated-feature stability set.
 
@@ -153,15 +140,19 @@ The following features are named as PD/LGD/EAD inputs in A02 §3.2. Each is enum
 
 ## 7. Deferral and open-item register (A04 scope)
 
+Every `Deferred` and `Open` status line in §§1–6 has a row here. The §1.1 `[VERIFY]` markers for `risk_fico`/`risk_ltv` are represented by row 8 (combined) so the register stays exhaustive without duplicating the inline markers.
+
 | # | Item | Deferred to | Owner | Trigger/milestone |
 | :--- | :--- | :--- | :--- | :--- |
 | 1 | Complete included-feature enumeration | `feature_inventory.csv` / NB01 | `[ANALYST: role]` | NB01 Phase 6 completion |
-| 2 | Per-feature transforms | A02 §3.3 / NB03 | `[ANALYST: role]` | NB03 specification |
+| 2 | Per-feature transforms (collapsed to pointer) | A02 §3.3 / NB03 | `[ANALYST: role]` | NB03 specification |
 | 3 | Target-proxy threshold | A01 §5 / A02 §1 | `[ANALYST: role]` | A01/A02 finalization |
 | 4 | Per-feature business meaning | A02 / NB02 | `[ANALYST: role]` | NB02 EDA |
 | 5 | Per-feature stability evidence | NB02 | `[ANALYST: role]` | NB02 kickoff |
 | 6 | Populated-feature stability set | NB02 | `[ANALYST: role]` | NB02 kickoff |
-| 7 | Per-feature fairness testing plan | A06 / NB04 | `[ANALYST: role]` | A06 / NB04 |
+| 7 | LGD-construction paragraph destination (A05 must contain it; pointer dangles until it does) | A05 | `[ANALYST: role]` | A05 update |
+| 8 | Confirm `risk_fico`/`risk_ltv` are real `train4.csv` columns | NB01 Phase 1 | `[ANALYST: role]` | NB01 Phase 1 |
+| 9 | Per-feature fairness testing plan | A06 / NB04 | `[ANALYST: role]` | A06 / NB04 |
 
 ---
 
@@ -169,10 +160,10 @@ The following features are named as PD/LGD/EAD inputs in A02 §3.2. Each is enum
 
 | Field | Value |
 | :--- | :--- |
-| **Document ID** | `[ANALYST: Document ID — cross-referenced elsewhere as FM-FDL-001]` |
-| **Version** | `0.1.0-draft` |
+| **Document ID** | `FM-FDL-001` *(proposed — pending analyst confirmation)* |
+| **Version** | `0.2.0-draft` |
 | **Status** | Draft — pending analyst insertion of `[ANALYST: ...]` values and `[VERIFY: ...]` confirmations |
 | **Owner** | `[ANALYST: name, role]` |
-| **Supersedes** | — (new artifact) |
+| **Supersedes** | `0.1.0-draft` |
 | **Related documents** | `FM-PDR-001` (A01), `FM-AS-001` (A02), `MAP-DS-FM-001` (A03), A05 (Methodology Document), `FM-DCR-001` (A07), `FM-CFR-001`, `feature_inventory.csv` |
 | **Next review** | Upon completion of NB01 Phase 6 (`feature_inventory.csv`) or next version bump |

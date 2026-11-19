@@ -25,19 +25,6 @@
 * **Temporal coverage:** Vintage years `2021–2023` *(verify against full `YEARMONTH` / origination range in `train4.csv`)*
 * **Licence:** Public dataset; terms permit analytical use *(verify specific Fannie Mae / Kaggle distribution terms)*
 
-### End-to-End Lineage Summary
-
-```text
-Source (Fannie Mae.zip → train4.csv: 1,672,822 × 133)
-  → Extraction (read CSV)
-  → Sampling (100,000 rows, seed 42)
-  → Target identification (TARGET / DPD_INT — construction unverified; see L12)
-  → Missingness assessment (count missing per column)
-  → Imputation (median for numeric, mode for categorical; *_missing indicators created)
-  → Outlier treatment (winsorize key numeric columns — verify exact list in NB01)
-  → Feature engineering (bands, derived risk features)
-  → Clean dataset: fannie_mae_final_clean.csv (100,000 × 175 in run 20261021_121434; verify vs. 179 post-encoding columns in NB01/NB02)
-
 ## 2. How did it get from source to analysis?
 
 ### 2.1 Source Publication

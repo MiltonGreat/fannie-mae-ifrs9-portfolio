@@ -3,7 +3,7 @@
 | Metadata Field | Value |
 | :--- | :--- |
 | **Document ID** | `FM-DCR-001` |
-| **Version** | `1.0.0-planning` (Forward-Looking Planning Draft) |
+| **Version** | `1.0.0-planning` |
 | **Freeze timestamp** | `YYYYMMDD_HHMMSS` *(literal placeholder — the register is not frozen until this is populated. The freeze must occur before any tool runs; see §2.)* |
 | **Author / Owner** | `[ANALYST: name, role]` |
 | **Project Scope** | IFRS 9 Expected Credit Loss (ECL) Methodology Demonstration (Public Data) |

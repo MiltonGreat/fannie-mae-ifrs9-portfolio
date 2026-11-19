@@ -1,165 +1,131 @@
-# Problem Definition Record — Fannie Mae IFRS 9 ECL Framework
+# Problem Definition Record (A01)
 
-**Document ID:** FM-PDR-001  
-**Version / Status:** 0.1 / Draft — retrospective  
-**Project:** Fannie Mae — IFRS 9 ECL methodology demonstration  
-**Document type:** Problem Definition Record (PDR)  
-**Companion documents:** FM-DS-001 · FM-FDL-001 · FM-MD-001 · FM-RVP-001 · FM-DCR-001 · FM-CFR-001 · MAP-STF-FM-001 · MAP-RP-001
+| Metadata Field | Value |
+| :--- | :--- |
+| **Document ID** | `FM-PDR-001` |
+| **Version** | `0.2.0-draft` (Forward-Looking Planning Draft) |
+| **Run ID / Timestamp** | `YYYYMMDD_HHMMSS` *(link to active execution run log)* |
+| **Author** | *(Specify Author / Role)* |
+| **Project Scope** | IFRS 9 Expected Credit Loss (ECL) Methodology Demonstration (Public Data) |
+| **Regulatory Alignment References** | OSFI E-23, SR 26-2, ECOA *(illustrative/defensibility alignment; not a compliance certification)* |
+| **Cross-Referenced Artifacts** | `FM-DCR-001`, `FM-CFR-001`, `FM-AR-001`, `A03` (Data Specification), `A14` (Findings), `A16` (Remediation Plan) |
 
----
-
-> **Retrospective framing.** This document was reconstructed from the FM pipeline's implementation, not written before it. The pipeline's notebooks, outputs, and the FDL/DCR/CFR record what the problem definition *turned out to be*. A PDR written before the analysis would have stated the problem definition *in advance*, and would have been the document that constrained the subsequent work. This version is the retrospective: it describes the problem definition the pipeline implies. **Where this document and the FDL/DCR/CFR disagree, the FDL/DCR/CFR take precedence** — they were revised against the notebook output, while this document is a reconstruction.
-
----
-
-## 1. Purpose and scope
-
-This PDR records the problem the Fannie Mae IFRS 9 ECL framework was built to address: what decision the framework supports, what population it applies to, what the target is, and what constraints the analysis operated under.
-
-**This is not a validation opinion.** The framework has not been independently validated — it is a methodology demonstration. This document records the problem the demonstration addresses, not the quality of the demonstration.
+> **Governance & Scope Notice:** This document is written from a forward-looking planning perspective to define intended design, governance purpose, and auditability for the ongoing project, paired with planned/recorded execution parameters where applicable. This project is a **methodology demonstration on public data**, not a production allowance and not an independent validation opinion.
 
 ---
 
-## 2. The decision supported
+## 1. What business problem does the model address?
 
-The pipeline supports **a methodology demonstration, not a business decision.** The framework does not decide whether to provision, whether to lend, or whether to deploy. It demonstrates that a pipeline **can** implement the IFRS 9 ECL arithmetic on a public dataset, with documented assumptions.
-
-**What the pipeline supports:**
-- A methodology demonstration for a portfolio, technical, or regulatory audience.
-- The pipeline's outputs (PD, LGD, EAD, staging, probability-weighted ECL) as evidence that the arithmetic works.
-
-**What the pipeline does not support:**
-- A production ECL estimate.
-- A provisioning decision.
-- A capital adequacy determination.
-- A regulatory compliance claim.
-
-**The distinction is the framework's central claim** (see MAP-STF-FM-001 §1 and the FM README's "What this framework does NOT demonstrate" section). The PDR records the distinction at the problem-definition stage, so a reader who starts here knows what the pipeline is and is not for.
-
-`[ANALYST: insert the analyst's framing of the decision the pipeline supports. The "what the pipeline supports" list above is derived from the framework document and the README; the analyst's framing is the paragraph that says what a reader should do with the pipeline's output. If the analyst's framing is "use this as a teaching example," say so; if it is "use this as a starting point for a production build," say so; if it is something else, say that.]`
+* **Intended Design & Governance Purpose:** Define a transparent, reproducible IFRS 9 Expected Credit Loss (ECL) demonstration framework ($\text{ECL} = \text{PD} \times \text{LGD} \times \text{EAD}$ probability-weighted across scenarios, with stage allocation) that shows how allowance calculations, stress/scenario mechanics, and audit trails are structured to support defensibility against OSFI E-23, SR 26-2, and ECOA principles.
+* **Planned / Applied Execution Context:** A small bank must recognize an allowance for expected credit losses on its mortgage portfolio and demonstrate to its regulator that the allowance is defensible. Under IFRS 9, this requires computing Expected Credit Loss ($\text{ECL}$) as $\text{PD} \times \text{LGD} \times \text{EAD}$, probability-weighted across scenarios, with loans classified into stages. The project produces that ECL figure on public Fannie Mae data, with a documented audit trail sufficient for internal and regulatory review. It is a demonstration of the methodology, not a production allowance, and not an independent validation opinion.
 
 ---
 
-## 3. Population
+## 2. What decisions does the model support?
 
-The pipeline operates on a **100,000-row random sample** of the Fannie Mae Single-Family Loan Performance dataset.
+* **Intended Design & Governance Purpose:** Explicitly map planned analytical outputs to governance decisions, decision-makers, and review cadences so decision authority remains clearly bounded.
+* **Planned / Applied Execution Context:**
+
+| # | Decision | Decision-Maker | Frequency |
+| :--- | :--- | :--- | :--- |
+| **D1** | ECL allowance to recognize this period | CFO / Controller | Quarterly |
+| **D2** | Whether the allowance is adequate under stress | CRO / Treasurer | Quarterly |
+| **D3** | Whether CET1 capital is adequate under stress | CRO / Treasurer | Quarterly — separate from D1 |
+| **D4** | Whether to adjust underwriting standards | Chief Credit Officer | Annual |
+| **D5** | Whether the model is fit for continued use | Model Risk Committee | Annual |
+
+* **What the pipeline supports (demonstration scope):**
+  * A methodology demonstration for a portfolio, technical, or regulatory audience.
+  * Pipeline outputs (`PD`, `LGD`, `EAD`, staging, probability-weighted `ECL`) as evidence that the arithmetic works.
+
+---
+
+## 3. What decisions does the model not support?
+
+* **Intended Design & Governance Purpose:** Establish hard non-use and decision-authority boundaries prior to execution so demonstration outputs are not misapplied to operational, capital, or compliance decisions.
+* **Planned / Applied Execution Context:**
+  * The model does **not** support: individual loan pricing or underwriting; regulatory capital under Basel III IRB; compensation or performance evaluation; fair lending compliance certification; any decision affecting a specific borrower; or Canadian portfolio decisions without recalibration.
+  * The pipeline does **not** support: a production ECL estimate, a provisioning decision, a capital adequacy determination, or a regulatory compliance claim.
+  * The pipeline does **not** decide whether the framework is approved, whether the methodology is production-ready, whether the ECL estimate is correct, or whether the framework is IFRS 9-compliant. Those judgments belong to the analyst in the Approval Record (`FM-AR-001`) and any independent validation opinion.
+
+---
+
+## 4. What is the population and unit of analysis?
+
+* **Intended Design & Governance Purpose:** Specify the target source population, sampling design, unit of analysis assumptions, and verification dependencies prior to execution.
+* **Planned / Applied Population Parameters:**
 
 | Field | Value |
-|---|---|
+| :--- | :--- |
 | **Source population** | Fannie Mae Single-Family Loan Performance (public tape; `train4.csv` from `Fannie Mae.zip`) |
-| **Full population size** | 1,672,822 rows |
-| **Sample size** | 100,000 rows |
-| **Sample method** | Random sample, seed 42 |
-| **Sample default rate** | 0.94–0.95% |
-| **Post-filter population** | 100,000 rows (no rows excluded by the target definition) |
+| **Full population size** | `1,672,822` rows |
+| **Sample size** | `100,000` rows |
+| **Sample method** | Random sample, seed `42` (unstratified) |
+| **Sample default rate** | `0.94–0.95%` |
+| **Post-filter population** | `100,000` rows (no rows excluded by the target definition) |
 
-**On the population's scope.** The population is Fannie Mae's loan tapes — U.S. single-family mortgages. It does not include Canadian portfolios, commercial mortgages, or any other loan type. The pipeline's conclusions are illustrative for a Canadian bank's portfolio, not transferable (L8 in FM-CFR-001).
+* **Scope & Sampling Notes:**
+  * The population covers U.S. single-family mortgages from Fannie Mae's loan tapes and does not include Canadian portfolios, commercial mortgages, or other loan types. Conclusions are illustrative for a Canadian bank's portfolio, not transferable (`L8` in `FM-CFR-001`).
+  * An unstratified random sample (seed `42`) is used; sample target-rate alignment with the population (`0.94–0.95%`) serves as the sample-quality check.
 
-**On the sampling.** The random sample is not stratified. The sample's default rate matches the population's default rate to two decimal places, which is the sample-quality check. A stratified sample would be more efficient for some purposes; a random sample is the conservative choice for a methodology demonstration.
+### Unit of analysis — verification status
 
-`[ANALYST: insert the population's business context. Why Fannie Mae? What does the dataset represent in the mortgage market? What vintage coverage does it have? The notebook output does not contain this context; it is the analyst's framing of why this dataset is the right one for the demonstration.]`
+The pipeline treats each row in `train4.csv` as one loan observation. This assumption has not been verified against the Kaggle data dictionary or the Fannie Mae performance-file glossary. The Fannie Mae source data is a loan-month file, in which each row represents a loan's status in a reporting month. If `train4.csv` preserves that structure, the 100,000-row sample is 100,000 loan-month observations, not 100,000 distinct loans, and the portfolio-size figures in the framework document (the ~$223M portfolio ECL, the "100,000-loan portfolio" language) would need to be recomputed on a loan-level basis. The verification is recorded as Limitation `L11` in the CFR, with the mitigation path described below.
 
 ---
 
-## 4. Target definition
+## 5. What is the target?
+
+* **Intended Design & Governance Purpose:** Define the target variable, threshold framing, and IFRS 9 staging relationship upfront, and explicitly record any unverified construction logic or threshold mismatches as open governance limitations.
+* **Planned / Applied Target Specification:**
 
 | Field | Value |
-|---|---|
-| **Target** | `default` (binary) |
-| **Definition** | `1` if the loan status is a "bad" status (Charged Off, Late (31–120 days), In Grace Period, Late (16–30 days)); `0` if the loan status is a "good" status (Fully Paid, Current) |
-| **Threshold** | 16+ days past due |
-| **Exclusions** | No rows excluded (all loans fall into a good or bad status) |
+| :--- | :--- |
+| **Target** | `TARGET` (binary) |
+| **Threshold / Framing** | Demonstration framing references a `16+` days-past-due threshold (earlier than IFRS 9's `30`-day SICR trigger); `train4.csv` provides `TARGET` and `DPD_INT` |
+| **Exclusions** | No rows excluded (`100,000` rows retained) |
 
-**The threshold is 16+ days, not IFRS 9's 30+ days.** This is a deliberate design decision: the target definition is **for the ECL demonstration's purposes**, not for IFRS 9 provisioning. The 16+ day threshold produces a higher default rate than a 30+ day threshold would, which makes the demonstration's numbers larger and therefore easier to inspect. **The framework does not claim to be IFRS 9-compliant because of this threshold** (see L8 in FM-CFR-001; the framework's README "What this framework does NOT demonstrate" section).
+* **IFRS 9 Staging & Threshold Alignment Note:**
+  * The `16+` day threshold is earlier than IFRS 9's `30`-day rebuttable presumption for Stage 2 (SICR) and typical `90`-day / credit-impaired alignment for Stage 3. Stage 3 in this pipeline is therefore a conservative demonstration proxy (`delinquency_state = default × 5` / `delinquency_state >= 3`), not IFRS 9 Stage 3 (`C6` / `L2` in `FM-CFR-001`).
 
-`[ANALYST: insert the reasoning for the 16+ day threshold. Was it chosen because the Fannie Mae tape's `loan_status` field has those specific categories? Was it chosen to match a benchmark? Was it chosen to produce a target rate in a particular range? If the answer is "it was chosen because the status categories are what they are," state that — it is the honest answer.]`
+### Target definition — source and verification status
+
+The pipeline's default target is a binary flag. Its construction from the Fannie Mae source fields is not documented in the pipeline. The Fannie Mae source data uses Current Loan Delinquency Status (`0` = current, `1` = 30–59 days, `2` = 60–89, `3` = 90–119, etc.) and Zero Balance Code (termination reason). The Kaggle derivative `train4.csv` provides `DPD_INT` and `TARGET`, which are derived from these fields by an undocumented construction. The pipeline has not verified whether `TARGET` is (a) a loan-month delinquency flag, (b) a loan-level default flag (did the loan ever reach a credit event?), or (c) a hybrid. This ambiguity is material. If `TARGET` is a loan-month flag, the target rate is a delinquency rate, not a default rate, and the IFRS 9 staging logic (which uses `delinquency_state = default × 5`) is built on a definition that does not match the stated IFRS 9 default convention. If `TARGET` is a loan-level flag, the target rate is a default rate, but the "Current" rows carry `TARGET = 0` even for loans that will default later, which makes the target a current-status flag rather than a default flag. The ambiguity is recorded as Limitation `L12` in the CFR.
 
 ---
 
-## 5. Constraints
+## 6. What are the constraints?
 
-The pipeline operated under the following constraints:
+* **Intended Design & Governance Purpose:** Catalog data, geographic, modeling, verification, and demonstration constraints prior to execution so expectations and governance boundaries remain explicit.
+* **Planned / Applied Constraints:**
 
-| Constraint | What it means |
-|---|---|
+| Constraint | What It Means |
+| :--- | :--- |
 | **Public dataset** | Fannie Mae Single-Family Loan Performance; no proprietary bank data |
-| **U.S. data only** | No Canadian portfolio validation (L8) |
-| **No current credit characteristics** | SICR uses a top-decile proxy, not an observed measurement (L2) |
-| **No direct protected attributes** | Fairness testing is geographic-proxy only (L7) |
-| **No macro indicators** | Scenario multipliers are analyst-specified, not calibrated to macro variables (L9) |
+| **U.S. data only** | No Canadian portfolio validation (`L8`) |
+| **No current credit characteristics** | SICR uses a top-decile proxy, not an observed measurement (`L2`) |
+| **No direct protected attributes** | Fairness testing is geographic-proxy only (`L7`) |
+| **No macro indicators** | Scenario multipliers are analyst-specified, not calibrated to macro variables (`L9`) |
 | **Methodology demonstration, not production** | Parameters are specified, not fitted; ECL is illustrative, not a forecast |
+| **Target construction not verifiable from the pipeline** | The Kaggle `TARGET` and `DPD_INT` definitions are undocumented in the pipeline; the target's relationship to Fannie Mae's Current Loan Delinquency Status and Zero Balance Code has not been verified. Documented as `L11`/`L12`. |
 
-**The constraints are not limitations of the pipeline's engineering** — they are limitations of the data. The pipeline implements the methodology the data supports. A production implementation would need data the pipeline does not have.
-
-`[ANALYST: insert the analyst's framing of the constraints. The list above is the factual constraints; the framing is why they matter for the demonstration's claims. The "why it matters" is the analyst's voice: a constraint that is named but not interpreted is a fact without a consequence.]`
+* **Constraint Governance Note:** These constraints reflect dataset, provenance, and demonstration scope boundaries rather than coding defects; production deployment would require verified data lineage and calibration not present here.
 
 ---
 
-## 6. Success criteria
+## 7. What happens if the model is wrong?
 
-The pipeline's success criteria are the criteria the DCR (FM-DCR-001) defines, applied at the methodology level:
+* **Intended Design & Governance Purpose:** Define the financial/analytical consequence of model error, establish automated register guards (`FM-DCR-001`), and specify the compensating mitigants and escalation path.
+* **Planned / Applied Guardrail Criteria:**
 
 | Criterion | Threshold | Source |
-|---|---|---|
-| AP-02 (LGD band) | 40%–60% target; 30%–70% failure | DCR §3.3 |
-| AP-03 (EAD ratio) | 60%–75% target; 50%–85% failure | DCR §3.3 |
-| AP-04 (ECL ratio of EAD) | 1%–3% target; 0.5%–5% failure | DCR §3.3 |
+| :--- | :--- | :--- |
+| **AP-02 (LGD band)** | `40%–60%` target; `30%–70%` failure | DCR §3.3 |
+| **AP-03 (EAD ratio)** | `60%–75%` target; `50%–85%` failure | DCR §3.3 |
+| **AP-04 (ECL ratio of EAD)** | `1%–3%` target; `0.5%–5%` failure | DCR §3.3 |
 
-**The pipeline's success is not "all guards PASS."** The pipeline's success is that the guards **fire as designed** — including the guards that fire because the data has a known property (AP-03 fires because the portfolio is young; that is the guard working correctly, not the pipeline failing).
+* **Guardrail Escalation & Traceability:** Success for this demonstration is not "all guards PASS," but that the guards fire as designed—including guards that fire because the data has a known property (`AP-03` fires because the portfolio is young; that is the guard working correctly, not the pipeline failing). When a guard fires outside its target band, the pipeline logs a `WARNING` and records the value in the DCR's results section; when a guard fires outside its failure band, the pipeline logs an `ERROR` and the finding is routed to the Findings Register (`A14`) and the Remediation Plan (`A16`). In this run, `AP-03` fired outside the failure band; the `ERROR` is logged, and Finding `FM-R-08` in the FM Remediation Plan is the trace.
 
-**In this run:** AP-02 PASS, AP-03 OUTSIDE FAILURE (expected), AP-04 PASS. The pipeline is **successful as a demonstration** — the guards fire as designed, and the one exception is documented.
+### If the model is wrong — the consequence and the compensation
 
-`[ANALYST: insert the analyst's framing of "success" for the pipeline. The DCR defines the guards; the analyst defines what "success" means for the demonstration. Is it "the guards fired correctly"? Is it "the numbers are in a defensible range"? Is it "the methodology's limitations are documented"? All three are true; the analyst's framing is what a reader should take away.]`
-
----
-
-## 7. What the pipeline does not decide
-
-**The pipeline does not decide:**
-- Whether the framework is approved.
-- Whether the methodology is production-ready.
-- Whether the ECL estimate is correct.
-- Whether the framework is IFRS 9-compliant.
-
-**These decisions belong to the analyst**, in the Approval Record (FM-AR-001) and any Validation Opinion that might be written about the framework. **The pipeline's job is to compute; the analyst's job is to decide.** The PDR records the boundary because a reader who starts with the PDR should know where the pipeline's authority ends.
-
-`[ANALYST: insert the analyst's framing of the boundary. The paragraph above states the boundary; the framing is why it matters — what would go wrong if a reader crossed it? The answer is different for each decision. "Whether the framework is approved" is a governance failure if crossed; "whether the ECL estimate is correct" is a validation failure; "whether the framework is IFRS 9-compliant" is a regulatory failure. The analyst's framing names the failure modes.]`
-
----
-
-## 8. Document control
-
-| Field | Value |
-|---|---|
-| **Document ID** | FM-PDR-001 |
-| **Version** | 0.1 |
-| **Status** | Draft — retrospective; pending analyst completion of the marked sections |
-| **Owner** | `[ANALYST: name, role]` |
-| **Supersedes** | None (first version) |
-| **Related documents** | FM-DS-001 · FM-FDL-001 · FM-MD-001 · FM-RVP-001 · FM-DCR-001 · FM-CFR-001 · MAP-STF-FM-001 · MAP-RP-001 |
-| **Next review** | At the next MAJOR version bump of the framework |
-
----
-
-## 9. What this document contains, and what it does not
-
-### What it contains (from the notebook output and the FM documents)
-
-- The decision the pipeline supports (a methodology demonstration).
-- The population (Fannie Mae sample, 100,000 rows).
-- The target definition (16+ days past due; binary).
-- The constraints (public data, U.S. only, no current credit, no protected attributes, no macro).
-- The success criteria (the DCR's guard bands).
-- The boundary between the pipeline's authority and the analyst's authority.
-
-### What it does not contain (the `[ANALYST: ...]` markers)
-
-- **§2** — the analyst's framing of the decision the pipeline supports.
-- **§3** — the population's business context (why Fannie Mae, what vintage coverage).
-- **§4** — the reasoning for the 16+ day threshold.
-- **§5** — the analyst's interpretation of the constraints' consequences.
-- **§6** — the analyst's framing of "success."
-- **§7** — the analyst's framing of why the boundary matters.
-- **§8** — the document owner's name and role.
-
-**The document's structure is retrospective.** The factual content (population, target, constraints, success criteria) is sourced from the notebook output and the FM documents. The analytical content (why Fannie Mae, why 16+ days, why the boundary matters) is the analyst's contribution. **A PDR written before the analysis would have had the analytical content and would have derived the factual content from it. This retrospective PDR has the factual content and marks the analytical content as the analyst's contribution.** Both are useful; the retrospective version is the one this project has, and this document is honest about the fact.
+The model's output is an ECL figure. If the model is wrong, the consequence is a misstated allowance: the bank provisions too little (understating expected losses, overstating capital) or too much (overstating losses, understating distributable earnings). The PDR records three compensating mitigants. First, the model is a demonstration, not a production allowance — the framework document states this, and the approval record (`FM-AR-001`) is a methodology acceptance, not an accounting sign-off. Second, the register guards (`AP-02`, `AP-03`, `AP-04`) fire on parameter values outside their target and failure bands; when a guard fires outside its failure band, the pipeline logs an `ERROR` and the finding is routed to the Findings Register (`A14`) and the Remediation Plan (`A16`). Third, the target and unit-of-analysis ambiguities (`L11`, `L12`) are disclosed in the CFR and the Data Specification; a reader who relies on the ECL figure is told what the figure's target definition does and does not support. The model's wrongness is bounded by these mitigants, not eliminated by them.

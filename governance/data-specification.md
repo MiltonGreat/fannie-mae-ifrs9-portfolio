@@ -66,11 +66,6 @@ If neither file exists, NB01 raises `FileNotFoundError` and halts immediately. T
 
 <img width="628" height="424" alt="screenshot-gemini google com-2026 11 19-11_47_37" src="https://github.com/user-attachments/assets/ee4a35fe-d0d8-4bbe-a25a-1b05cbae4074" />
 
-NB03 parameters: outputs/notebook_03_parameters.json
-NB04 results:    outputs/notebook_04_results.json
-
----
-
 ### 3.2 Source-System Lineage
 
 The lineage inside Fannie Mae's publication process—and how the Kaggle derivative `train4.csv` constructed rolling windows, `DPD_INT`, and `TARGET` from raw Fannie Mae loan performance tapes[cite: 1]—is not recorded inside the pipeline.
